@@ -46,15 +46,19 @@ LEAF( guTranslateF )
 	sw	t0, 40(a0)
 	sw	zero, 44(a0)
 
-#if (!(_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32))
+#if (_MIPS_SIM == _MIPS_SIM_ABI32)
 	sw	a1, 48(a0)	/* line 4 */
 	sw	a2, 52(a0)
 	sw	a3, 56(a0)
-#else
+#elif (_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32)
 	swc1	fa1, 48(a0)	/* line 4 */
 	swc1	fa2, 52(a0)
 	swc1	fa3, 56(a0)
-#endif
+#else // eabi
+	swc1	fa0, 48(a0)	/* line 4 */
+	swc1	fa1, 52(a0)
+	swc1	fa2, 56(a0)
+#endif 
 	sw	t0, 60(a0)
 
 	j	ra

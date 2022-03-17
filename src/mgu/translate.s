@@ -35,20 +35,24 @@ LEAF( guTranslate )
 
 	li.s	ft0, FLOAT_0x10000	/* (float)0x00010000 */
 
-#if (!(_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32))
+#if (_MIPS_SIM == _MIPS_SIM_ABI32)
 	mtc1		a1, ft1
 	mul.s		ft2, ft1, ft0
-#else
+#elif (_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32)
 	mul.s		ft2, fa1, ft0
+#else
+	mul.s       ft2, fa0, ft0
 #endif
 	trunc.w.s	ft3, ft2
 	mfc1		t1, ft3		/* t1 = FTOFIX32(x) */
 
-#if (!(_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32))
+#if (_MIPS_SIM == _MIPS_SIM_ABI32)
 	mtc1		a2, ft1
 	mul.s		ft2, ft1, ft0
-#else
+#elif (_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32)
 	mul.s		ft2, fa2, ft0
+#else
+	mul.s       ft2, fa1, ft0
 #endif
 	trunc.w.s	ft3, ft2
 	mfc1		t3, ft3		/* t3 = FTOFIX32(y) */
@@ -68,11 +72,13 @@ LEAF( guTranslate )
 	sw	t0,24+32(a0)
 
 	
-#if (!(_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32))
+#if (_MIPS_SIM == _MIPS_SIM_ABI32)
 	mtc1		a3, ft1
 	mul.s		ft2, ft1, ft0
-#else
+#elif (_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32)
 	mul.s		ft2, fa3, ft0
+#else // eabi
+	mul.s       ft2, fa2, ft0
 #endif
 	trunc.w.s	ft3, ft2
 	mfc1		t1, ft3		/* t1 = FTOFIX32(z) */

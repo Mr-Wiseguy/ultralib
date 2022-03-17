@@ -123,10 +123,17 @@ extern "C" {
 #define ft2f	$f9
 #define ft3	$f10
 #define ft3f	$f11
+#if (_MIPS_SIM != _MIPS_SIM_ABI32) // eabi32
+#define fa2	$f16
+#define fa2f	$f17
+#define fa3	$f18
+#define fa3f	$f19
+#else
 #define ft4	$f16
 #define ft4f	$f17
 #define ft5	$f18
 #define ft5f	$f19
+#endif
 #define fs0	$f20
 #define fs0f	$f21
 #define fs1	$f22

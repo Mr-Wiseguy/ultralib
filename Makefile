@@ -19,7 +19,7 @@ AR_OLD := tools/gcc/ar
 # export COMPILER_PATH := $(WORKING_DIR)/tools/gcc
 
 ifeq ($(ABI),eabi)
-IFLAGS := -I $(WORKING_DIR)/include -I $(WORKING_DIR)/include/gcc -I $(WORKING_DIR)/include/PR
+IFLAGS := -I $(WORKING_DIR)/include -I $(WORKING_DIR)/include/gcc -I $(WORKING_DIR)/include/PR -I.
 ABIFLAGS := -mabi=eabi -mgp32 -mfp32
 AR_OLD := ar
 AS := mips-linux-gnu-as
@@ -27,7 +27,7 @@ CC := mips-linux-gnu-gcc
 endif
 
 ifeq ($(ABI),n32)
-IFLAGS := -I $(WORKING_DIR)/include -I $(WORKING_DIR)/include/gcc -I $(WORKING_DIR)/include/PR
+IFLAGS := -I $(WORKING_DIR)/include -I $(WORKING_DIR)/include/gcc -I $(WORKING_DIR)/include/PR -I.
 ABIFLAGS := -mabi=n32
 AR_OLD := ar
 AS := mips-linux-gnu-as
@@ -136,7 +136,7 @@ $(BUILD_DIR)/src/mgu/rotate.marker: export VR4300MUL := ON
 $(BUILD_DIR)/src/os/%.marker: ASFLAGS += -P
 $(BUILD_DIR)/src/gu/%.marker: ASFLAGS += -P
 $(BUILD_DIR)/src/libc/%.marker: ASFLAGS += -P
-$(BUILD_DIR)/src/voice/%.marker: CC := tools/compile_sjis.py -D__CC=$(CC)
+$(BUILD_DIR)/src/voice/%.marker: CC := tools/compile_sjis.py -D__CC=$(CC) -Isrc/voice/
 
 $(BUILD_DIR)/%.marker: %.c
 ifneq ($(NON_MATCHING),1)

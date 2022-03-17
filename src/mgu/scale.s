@@ -24,15 +24,26 @@ modified versions thereof.
  * ft0 : (float)0x00010000
  * ft1, ft2, ft3, t0 :	work reg 				 		
  */
-#if (!(_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32))
+#if (_MIPS_SIM == _MIPS_SIM_ABI32)
 #define FTOFIX32(a, t)	\
 	mtc1		a, ft1		;	\
 	mul.s		ft2, ft1, ft0	;	\
 	trunc.w.s	ft3, ft2, t0	;	\
 	mfc1		t, ft3		;
-#else
+#elif (_MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32)
 #define FTOFIX32(a, t)	\
 	mul.s		ft2, f##a, ft0	;	\
+	trunc.w.s	ft3, ft2, t0	;	\
+	mfc1		t, ft3		;
+#else // eabi
+#undef a1
+#define a1 fa0
+#undef a2
+#define a2 fa1
+#undef a3
+#define a3 fa2
+#define FTOFIX32(a, t)	\
+	mul.s		ft2, a, ft0	;	\
 	trunc.w.s	ft3, ft2, t0	;	\
 	mfc1		t, ft3		;
 #endif
