@@ -1,10 +1,12 @@
 NON_MATCHING ?= 1
 
+ABI ?= o32
+
 TARGET := libgultra_rom
 BASE_DIR := base_$(TARGET)
 BASE_AR := $(TARGET).a
 BUILD_DIR := build
-BUILD_AR := $(BUILD_DIR)/$(TARGET)_n32.a
+BUILD_AR := $(BUILD_DIR)/$(TARGET)_$(ABI).a
 
 WORKING_DIR := $(shell pwd)
 
