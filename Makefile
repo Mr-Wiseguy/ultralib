@@ -118,11 +118,13 @@ ifneq ($(NON_MATCHING),1)
 endif
 	@touch $@
 
+ifeq ($(NON_MATCHING),0)
 $(BUILD_DIR)/src/os/assert.marker: OPTFLAGS := -O0
 $(BUILD_DIR)/src/os/ackramromread.marker: OPTFLAGS := -O0
 $(BUILD_DIR)/src/os/ackramromwrite.marker: OPTFLAGS := -O0
 $(BUILD_DIR)/src/os/exit.marker: OPTFLAGS := -O0
 $(BUILD_DIR)/src/os/seterrorhandler.marker: OPTFLAGS := -O0
+endif
 $(BUILD_DIR)/src/gu/us2dex_emu.marker: GBIDEFINE :=
 $(BUILD_DIR)/src/gu/us2dex2_emu.marker: GBIDEFINE :=
 $(BUILD_DIR)/src/sp/sprite.marker: GBIDEFINE := 
