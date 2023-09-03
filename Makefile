@@ -97,8 +97,16 @@ endif
 endif
 endif
 
+ifeq ($(findstring _rom,$(TARGET)),_rom)
+AR_OBJECTS := $(shell cat libultra_rom.txt)
+else ifeq ($(findstring _d,$(TARGET)),_d)
+AR_OBJECTS := $(shell cat libultra_d.txt)
+else
+AR_OBJECTS := $(shell cat libultra.txt)
+endif
+
 # Try to find a file corresponding to an archive file in any of src/ asm/ or the base directory, prioritizing src then asm then the original file
-AR_ORDER = $(foreach f,$(shell $(AR) t $(BASE_AR)),$(shell find $(BUILD_DIR)/src $(BUILD_DIR)/asm $(BASE_DIR) -iname $f -type f -print -quit))
+AR_ORDER = $(foreach f,$(AR_OBJECTS),$(shell find $(BUILD_DIR)/src $(BUILD_DIR)/asm $(BASE_DIR) -iname $f -type f -print -quit))
 MATCHED_OBJS = $(filter-out $(BASE_DIR)/%,$(AR_ORDER))
 UNMATCHED_OBJS = $(filter-out $(MATCHED_OBJS),$(AR_ORDER))
 NUM_OBJS = $(words $(AR_ORDER))
@@ -129,10 +137,12 @@ distclean:
 
 setup:
 	$(MAKE) -C tools
+ifneq ($(NON_MATCHING),1)
 	cd $(BASE_DIR) && $(AR) xo $(WORKING_DIR)/$(BASE_AR)
 	chmod -R +rw $(BASE_DIR)
 ifeq ($(COMPILER),ido)
 	export CROSS=$(CROSS) && ./tools/strip_debug.sh $(BASE_DIR)
+endif
 endif
 
 $(BUILD_DIR)/$(BASE_DIR)/%.marker: $(BASE_DIR)/%.o
