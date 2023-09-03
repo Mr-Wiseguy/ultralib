@@ -30,6 +30,7 @@ ifneq ($(findstring _d,$(TARGET)),_d)
 $(BUILD_DIR)/src/debug/%.marker: OPTFLAGS := -O1
 $(BUILD_DIR)/src/host/%.marker: OPTFLAGS := -O1
 $(BUILD_DIR)/src/os/%.marker: OPTFLAGS := -O1
+$(BUILD_DIR)/src/os/stoptimer.marker: OPTFLAGS := -O2
 $(BUILD_DIR)/src/rmon/%.marker: OPTFLAGS := -O1
 $(BUILD_DIR)/src/libc/ll.marker: OPTFLAGS := -O1
 $(BUILD_DIR)/src/libc/llbit.marker: OPTFLAGS := -O1
@@ -44,9 +45,12 @@ $(BUILD_DIR)/src/os/initialize_isv.marker: OPTFLAGS := -O2
 $(BUILD_DIR)/src/libc/ll.marker: MIPS_VERSION := -mips3 -32
 $(BUILD_DIR)/src/libc/llbit.marker: MIPS_VERSION := -mips3 -32
 $(BUILD_DIR)/src/libc/llcvt.marker: MIPS_VERSION := -mips3 -32
-$(BUILD_DIR)/src/os/exceptasm.marker: MIPS_VERSION := -mips3 -32
+$(BUILD_DIR)/src/os/exceptasm.marker: MIPS_VERSION := -mips3 -32 -O2
 $(BUILD_DIR)/src/log/delay.marker: MIPS_VERSION := -mips1 -o32
 $(BUILD_DIR)/src/log/delay.marker: PICFLAGS := -KPIC
+
+# //! Rare changes (exceptasm assembled with -O2)
+$(BUILD_DIR)/src/os/exceptasm.marker: ASOPTFLAGS := -O2
 
 ifneq ($(filter $(VERSION),D E F G H I),)
 $(BUILD_DIR)/src/libc/%.marker: OPTFLAGS := -O3

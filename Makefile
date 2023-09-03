@@ -166,8 +166,11 @@ ifneq ($(NON_MATCHING),1)
 	 echo "Object file $(@F:.marker=.o) is not in the current archive" \
 	)
 # create or update the marker file
-	@touch $@
+else
+	tools/set_o32abi_bit.py $(WORKING_DIR)/$(@:.marker=.o)
+	mips-linux-gnu-strip $(WORKING_DIR)/$(@:.marker=.o) -N asdasdasdasd
 endif
+	@touch $@
 
 $(S_MARKER_FILES): $(BUILD_DIR)/%.marker: %.s
 	cd $(<D) && $(WORKING_DIR)/$(CC) $(ASFLAGS) $(MIPS_VERSION) $(CPPFLAGS) $(ASOPTFLAGS) $(<F) $(IINC) -o $(WORKING_DIR)/$(@:.marker=.o)
@@ -180,8 +183,11 @@ ifneq ($(NON_MATCHING),1)
 	 echo "Object file $(@F:.marker=.o) is not in the current archive" \
 	)
 # create or update the marker file
-	@touch $@
+else
+	tools/set_o32abi_bit.py $(WORKING_DIR)/$(@:.marker=.o)
+	mips-linux-gnu-strip $(WORKING_DIR)/$(@:.marker=.o) -N asdasdasdasd
 endif
+	@touch $@
 
 # Rule for building files that require specific file paths in the mdebug section
 $(MDEBUG_FILES): $(BUILD_DIR)/src/%.marker: src/%.s

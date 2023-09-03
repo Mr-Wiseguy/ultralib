@@ -74,6 +74,14 @@ typedef struct {
     u64 time;
 } __OSThreadprofile_s;
 
+//! Rare changes
+typedef struct {
+    u8 pad[0xC];
+    u32 unkC; // 1 if odd floats should be saved
+    __OSfp vals[16];
+} __OSThreadOddFpStorage;
+//! End Rare changes
+
 typedef struct OSThread_s {
     struct OSThread_s    *next;       /* run/mesg queue link */
     OSPri                 priority;   /* run/mesg queue priority */
@@ -83,7 +91,11 @@ typedef struct OSThread_s {
     u16                   flags;      /* flags for rmon */
     OSId                  id;         /* id for debugging */
     int                   fp;         /* thread has used fp unit */
-    __OSThreadprofile_s  *thprof;     /* workarea for thread profiler */
+//! Rare changes
+// Rare replaced the thread profiler data with a pointer for saving odd float regs
+    // __OSThreadprofile_s  *thprof;     /* workarea for thread profiler */
+    __OSThreadOddFpStorage *odd_float_save; // Pointer to where to save odd float regs
+//! End Rare changes
     __OSThreadContext     context;    /* register/interrupt mask */
 } OSThread;
 

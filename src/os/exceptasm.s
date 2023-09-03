@@ -68,7 +68,9 @@ EXPORT(__osCauseTable_pt)
 
 .data
 
-#if BUILD_VERSION >= VERSION_J
+/* //! Rare changes */
+/* The code change from 2.0J here is absent, Rare may have used outdated exceptasm source */
+#if 0 /*BUILD_VERSION >= VERSION_J*/
 EXPORT(__osHwIntTable)
     .word 0, 0
     .word 0, 0
@@ -86,6 +88,7 @@ EXPORT(__osHwIntTable)
     .word 0
     .word 0
 #endif
+/* //! End Rare changes */
 
 #ifndef _FINALROM
 __osRdb_DbgRead_Ct:
@@ -104,6 +107,14 @@ __osPreviousThread:
 #endif  
 
 .text
+
+/* //! Rare changes */
+/* // Duplicated function from below */
+LEAF(__osExceptionPreambleDuplicate)
+    la      k0, __osException
+    jr      k0
+END(__osExceptionPreambleDuplicate)
+/* //! End Rare changes */
 
 LEAF(__osExceptionPreamble)
     la      k0, __osException
@@ -194,6 +205,30 @@ STAY2(mtc0  k1, C0_SR)
     sw      zero, THREAD_FP(k0)
     /* this instruction is useless, leftover because of bad placement of an ifdef for the debug version */
 STAY2(mfc0  t0, C0_CAUSE)
+/* //! Rare changes */
+/* Check if the exception cause was syscall and return from the exeception into the syscall handler if so */
+    andi    t1, t0, CAUSE_EXCMASK
+    li      t2, EXC_SYSCALL
+    bne     t1, t2, savecontext
+    
+STAY2(mfc0  t0, C0_EPC)
+    la      t1, syscall_handler
+STAY2(mtc0  t1, C0_EPC)
+    lw      k1, THREAD_SR(k0)
+    ld      $9, THREAD_GP9(k0)
+    ld      $10, THREAD_GP10(k0)
+.set noat
+    ld      $1, THREAD_GP1(k0)
+.set at
+STAY2(mtc0  k1, C0_SR)
+.set noreorder
+    nop
+    nop
+    nop
+    nop
+    eret
+.set reorder
+/* //! End Rare changes */
 #ifndef _FINALROM
     lw      t2, __kmc_pt_mode
     bnez    t2, skip_kmc_mode
@@ -444,16 +479,15 @@ savecontext:
 /*if any interrupts are enabled*/
     la      t0, __OSGlobalIntMask
     lw      t0, 0(t0)
-    xor     t2, t0, ~0 /* not except not using not */
-    andi    t2, t2, SR_IMASK
-    or      ta0, t1, t2
-    and     t3, k1, ~SR_IMASK
-    or      t3, t3, ta0
-    sw      t3, THREAD_SR(k0)
+/* //! Rare changes */
+/* This code was modified */
+    xor     t0, t0, ~0 /* not except not using not */
     andi    t0, t0, SR_IMASK
-    and     t1, t1, t0
+    or      t1, t1, t0
     and     k1, k1, ~SR_IMASK
     or      k1, k1, t1
+    sw      k1, THREAD_SR(k0)
+/* //! End Rare changes */
 savercp:
 
     lw      t1, PHYS_TO_K1(MI_INTR_MASK_REG)
@@ -477,6 +511,12 @@ STAY2(mfc0  t0, C0_EPC)
 STAY2(cfc1  t0, fcr31)
     NOP
     sw      t0, THREAD_FPCSR(k0)
+/* //! Rare changes */
+/* Read SR and check if the FR bit is set */
+    lw      t0, THREAD_SR(k0)
+    lui     t1, 0x400
+    and     t1, t1, t0
+/* //! End Rare changes */
     sdc1    $f0, THREAD_FP0(k0)
     sdc1    $f2, THREAD_FP2(k0)
     sdc1    $f4, THREAD_FP4(k0)
@@ -493,6 +533,35 @@ STAY2(cfc1  t0, fcr31)
     sdc1    $f26, THREAD_FP26(k0)
     sdc1    $f28, THREAD_FP28(k0)
     sdc1    $f30, THREAD_FP30(k0)
+/* //! Rare changes */
+    /* Don't save odd floats if SR_FR isn't set */
+    beqz    t1, skip_odd_floats
+    /* Load the pointer to where to save odd float regs to */
+    lw      t0, 0x1C(k0)
+    /* Don't save odd floats if the storage isn't configured */
+    beqz    t0, skip_odd_floats
+    /* Don't save odd floats if this field is set */
+    /* TODO figure out what this field is */
+    lw      t1, 0xC(t0)
+    beqz    t1, skip_odd_floats
+    sdc1    $f1, 0x10(t0)
+    sdc1    $f3, 0x18(t0)
+    sdc1    $f5, 0x20(t0)
+    sdc1    $f7, 0x28(t0)
+    sdc1    $f9, 0x30(t0)
+    sdc1    $f11, 0x38(t0)
+    sdc1    $f13, 0x40(t0)
+    sdc1    $f15, 0x48(t0)
+    sdc1    $f17, 0x50(t0)
+    sdc1    $f19, 0x58(t0)
+    sdc1    $f21, 0x60(t0)
+    sdc1    $f23, 0x68(t0)
+    sdc1    $f25, 0x70(t0)
+    sdc1    $f27, 0x78(t0)
+    sdc1    $f29, 0x80(t0)
+    sdc1    $f31, 0x88(t0)
+skip_odd_floats:
+/* //! End Rare changes */
 1:
 STAY2(mfc0  t0, C0_CAUSE)
     sw      t0, THREAD_CAUSE(k0)
@@ -559,7 +628,9 @@ STAY2(mtc0  t1, C0_COMPARE)
     b       next_interrupt
 
 cart:
-#if BUILD_VERSION >= VERSION_J
+/* //! Rare changes */
+/* The code change from 2.0J here is absent, Rare may have used outdated exceptasm source */
+#if 0 /*BUILD_VERSION >= VERSION_J*/
     and     s0, s0, ~CAUSE_IP4
     la      t1, __osHwIntTable
     add     t1, HWINTR_SIZE
@@ -578,8 +649,10 @@ cart:
     jal     send_mesg
     b       next_interrupt
 #else
+/* Additionally, the 64DD part of this code was removed */
     li      a0, MESG(OS_EVENT_CART)
     and     s0, s0, ~CAUSE_IP4
+/*
     la      sp, leoDiskStack 
     addiu   sp, 0x1000 - 0x10 # Stack size minus initial frame
     li      t2, HWINTR_SIZE
@@ -594,9 +667,11 @@ cart:
     b       redispatch
     
 1:
+*/
     jal     send_mesg
     b       next_interrupt
 #endif
+/* //! End Rare changes */
 
 rcp:
     lw      s1, PHYS_TO_K1(MI_INTR_REG)
@@ -610,7 +685,10 @@ rcp:
 
     andi    s1, s1, 0x3e
     lw      ta0, PHYS_TO_K1(SP_STATUS_REG)
-    li      t1, (SP_CLR_INTR | SP_CLR_SIG3)
+/* //! Rare change */
+/* This was changed to not clear signal 3 */
+    li      t1, (SP_CLR_INTR /*| SP_CLR_SIG3*/)
+/* //! End Rare change */
 
     sw      t1, PHYS_TO_K1(SP_STATUS_REG)
     andi    ta0, ta0, 0x300
@@ -673,7 +751,9 @@ pi:
     li      t1, PI_STATUS_CLR_INTR
     sw      t1, PHYS_TO_K1(PI_STATUS_REG)
 
-#if BUILD_VERSION >= VERSION_J
+/* //! Rare changes */
+/* The code added in 2.0J here is absent, Rare may have used outdated exceptasm source */
+#if 0 /*BUILD_VERSION >= VERSION_J*/
     la      t1, __osPiIntTable
     lw      t2, (t1)
     beqz    t2, 1f
@@ -687,9 +767,10 @@ pi:
 #endif
     li      a0, MESG(OS_EVENT_PI)
     jal     send_mesg
-#if BUILD_VERSION >= VERSION_J
+#if 0 /*BUILD_VERSION >= VERSION_J*/
 2:
 #endif
+/* //! End Rare changes */
     beqz    s1, NoMoreRcpInts
     
 dp:
@@ -979,6 +1060,61 @@ __osDispatchThreadSave:
     and     k1, k1, ~SR_IMASK
     or      k1, k1, t1
 STAY2(mtc0  k1, C0_SR)
+/* //! Rare changes */
+/* This code was moved from below and modified to restore odd float regs if SR_FR is set */
+    lw      t0, THREAD_FP(k0)
+    beqz    t0, 1f
+
+    lw      t1, THREAD_FPCSR(k0)
+    ctc1    t1, fcr31
+    /* Mask out the FR bit from SR */
+    lui     t1, 0x400
+    and     t1, t1, k1
+    ldc1    $f0, THREAD_FP0(k0)
+    ldc1    $f2, THREAD_FP2(k0)
+    ldc1    $f4, THREAD_FP4(k0)
+    ldc1    $f6, THREAD_FP6(k0)
+    ldc1    $f8, THREAD_FP8(k0)
+    ldc1    $f10, THREAD_FP10(k0)
+    ldc1    $f12, THREAD_FP12(k0)
+    ldc1    $f14, THREAD_FP14(k0)
+    ldc1    $f16, THREAD_FP16(k0)
+    ldc1    $f18, THREAD_FP18(k0)
+    ldc1    $f20, THREAD_FP20(k0)
+    ldc1    $f22, THREAD_FP22(k0)
+    ldc1    $f24, THREAD_FP24(k0)
+    ldc1    $f26, THREAD_FP26(k0)
+    ldc1    $f28, THREAD_FP28(k0)
+    ldc1    $f30, THREAD_FP30(k0)  
+    
+    /* Don't restore odd floats if SR_FR isn't set */
+    beqz    t1, 1f
+    /* Load the pointer to where to restore odd float regs to */
+    lw      t0, 0x1C(k0)
+    /* Don't restore odd floats if the storage isn't configured */
+    beqz    t0, 1f
+    /* Don't restore odd floats if this field is set */
+    /* TODO figure out what this field is */
+    lw      t1, 0xC(t0)
+    beqz    t1, 1f
+    ldc1    $f1, 0x10(t0)
+    ldc1    $f3, 0x18(t0)
+    ldc1    $f5, 0x20(t0)
+    ldc1    $f7, 0x28(t0)
+    ldc1    $f9, 0x30(t0)
+    ldc1    $f11, 0x38(t0)
+    ldc1    $f13, 0x40(t0)
+    ldc1    $f15, 0x48(t0)
+    ldc1    $f17, 0x50(t0)
+    ldc1    $f19, 0x58(t0)
+    ldc1    $f21, 0x60(t0)
+    ldc1    $f23, 0x68(t0)
+    ldc1    $f25, 0x70(t0)
+    ldc1    $f27, 0x78(t0)
+    ldc1    $f29, 0x80(t0)
+    ldc1    $f31, 0x88(t0)
+1:
+/* //! End Rare changes */
 .set noat
     ld      $1, THREAD_GP1(k0)
 .set at
@@ -1016,6 +1152,9 @@ STAY2(mtc0  k1, C0_SR)
     mthi    k1
     lw      k1, THREAD_PC(k0)
 STAY2(mtc0  k1, C0_EPC)
+/* //! Rare changes */
+/* This code was moved up */
+/*
     lw      k1, THREAD_FP(k0)
     beqz    k1, 1f
 
@@ -1039,6 +1178,8 @@ STAY2(ctc1  k1, fcr31)
     ldc1    $f30, THREAD_FP30(k0)
     
 1:
+*/
+/* //! End Rare changes */
 .set noreorder
     lw      k1, THREAD_RCP(k0)
     la      k0, __OSGlobalIntMask
@@ -1062,8 +1203,13 @@ END(__osDispatchThread)
 
 LEAF(__osCleanupThread)
     move    a0, zero
+/* //! Rare changes */
+/* This nop was removed */
+/*
 #if !defined(BBPLAYER) && !defined(__sgi)
     nop
 #endif
+*/
+/* //! End Rare changes */
     jal     osDestroyThread
 END(__osCleanupThread)

@@ -3,9 +3,11 @@
 #include "osint.h"
 #include "../io/viint.h"
 
+//! Rare changes
 int osStopTimer(OSTimer* t) {
     register u32 savedMask;
     OSTimer* timep;
+    int ret = -1;
 
 #ifdef _DEBUG
     if (!__osViDevMgr.active) {
@@ -14,26 +16,26 @@ int osStopTimer(OSTimer* t) {
     }
 #endif
 
-    if (t->next == NULL) {
-        return -1;
-    }
-
     savedMask = __osDisableInt();
-    timep = t->next;
-
-    if (timep != __osTimerList) {
-        timep->value += t->value;
-    }
-
-    t->prev->next = t->next;
-    t->next->prev = t->prev;
-    t->next = NULL;
-    t->prev = NULL;
-
-    if (__osTimerList->next == __osTimerList) {
-        __osSetCompare(0);
+    if (t->next != NULL) {
+        timep = t->next;
+    
+        if (timep != __osTimerList) {
+            timep->value += t->value;
+        }
+    
+        t->prev->next = t->next;
+        t->next->prev = t->prev;
+        t->next = NULL;
+        t->prev = NULL;
+    
+        if (__osTimerList->next == __osTimerList) {
+            __osSetCompare(0);
+        }
+        ret = 0;
     }
 
     __osRestoreInt(savedMask);
-    return 0;
+    return ret;
 }
+//! End Rare changes

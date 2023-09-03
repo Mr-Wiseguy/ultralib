@@ -10,6 +10,10 @@
 #define THREAD_FLAGS     18
 #define THREAD_ID        20
 #define THREAD_FP        24
+/* //! Rare changes */
+/* Pointer to where to save odd floats */
+#define THREAD_ODDFPSAVE 28
+/* //! End Rare changes */
 #define THREAD_GP1       32
 #define THREAD_GP2       40
 #define THREAD_GP3       48
