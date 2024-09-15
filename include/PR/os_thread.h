@@ -76,7 +76,9 @@ typedef struct {
 
 //! Rare changes
 typedef struct {
-    u8 pad[0xC];
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
     u32 unkC; // 1 if odd floats should be saved
     __OSfp vals[16];
 } __OSThreadOddFpStorage;
